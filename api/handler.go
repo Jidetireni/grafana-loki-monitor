@@ -1,0 +1,94 @@
+package api
+
+import (
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/telexintegrations/grafana-loki-monitor/service"
+
+	"github.com/gin-gonic/gin"
+)
+
+// LogRequest represents the data needed to fetch logs
+type LogRequest struct {
+	LokiURL   string
+	Query     string
+	StartTime string
+	EndTime   string
+	ReturnURL string
+	ChannelID string
+}
+
+// RequestBody represents the JSON structure sent by Telex
+type RequestBody struct {
+	ChannelID string    `json:"channel_id"`
+	ReturnURL string    `json:"return_url"`
+	Settings  []Setting `json:"settings"`
+}
+
+// Setting represents each setting field
+type Setting struct {
+	Label    string      `json:"label"`
+	Type     string      `json:"type"`
+	Required bool        `json:"required"`
+	Default  interface{} `json:"default"` // <-- Supports both string and number
+}
+
+// TickHandler handles POST requests from Telex
+func TickHandler(c *gin.Context) {
+	var reqBody RequestBody
+
+	// Parse incoming JSON request
+	if err := c.ShouldBindJSON(&reqBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format", "error_msg": err.Error()})
+		return
+	}
+
+	// Extract settings
+	var lokiURL, query string
+	for _, setting := range reqBody.Settings {
+		switch setting.Label {
+		case "Loki Server URL":
+			if url, ok := setting.Default.(string); ok {
+				lokiURL = url
+			}
+		case "Loki Query":
+			if q, ok := setting.Default.(string); ok {
+				query = q
+			}
+		}
+	}
+
+	// Validate required settings
+	if lokiURL == "" || query == "" {
+		log.Println("Missing required settings (Loki URL, Query)")
+		return
+	}
+
+	// Get time range (last 5 minutes)
+	endTime := time.Now().UTC()
+	startTime := endTime.Add(-5 * time.Minute)
+
+	// Send log request to the LogsEndpointHandler via the channel
+	logs, err := service.FetchLogs(lokiURL, query, startTime, endTime, 10)
+	if err != nil {
+		log.Printf("Error fetching logs: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch logs", "error_msg": err.Error()})
+		return
+	}
+
+	err = service.SendLogsToTelex(reqBody.ReturnURL, logs, reqBody.ChannelID)
+	if err != nil {
+		log.Printf("Error sending logs to telex: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error sending logs to telex:", "error_msg": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"channel_id": reqBody.ChannelID,
+		"return_url": reqBody.ReturnURL,
+		"logs":       logs,
+	})
+
+}
