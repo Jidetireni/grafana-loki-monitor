@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/telexintegrations/grafana-loki-monitor/api"
 )
 
 func getIntegrationJSON(c *gin.Context) {
@@ -42,8 +43,8 @@ func getIntegrationJSON(c *gin.Context) {
 				{"label": "Loki Query", "type": "text", "required": true, "default": "{job='varlogs'}"},
 				{"label": "Interval", "type": "text", "required": true, "default": "*/5 * * * *", "description": "Cron expression defining how often logs are fetched"},
 			},
-			"tick_url":   "https://telex-integration.onrender.com/tick",
-			"target_url": "",
+			"tick_url":   "https://telex-integration.onrender.com/tick/",
+			"target_url": api.LatestReturnURL,
 		},
 	}
 

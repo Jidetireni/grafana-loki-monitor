@@ -13,7 +13,7 @@ func main() {
 		AllowMethods: []string{"GET", "POST"},
 		AllowHeaders: []string{"Content-Type", "Authorization"},
 	}))
-	r.GET("/integration.json", getIntegrationJSON)
-	r.POST("/tick", api.TickHandler)
+	r.GET("/integration.json/", getIntegrationJSON)
+	r.POST("/tick/", api.TickHandler)
 	r.Run(":8080")
 }

@@ -35,6 +35,8 @@ type Setting struct {
 	Default  interface{} `json:"default"` // <-- Supports both string and number
 }
 
+var LatestReturnURL string
+
 // TickHandler handles POST requests from Telex
 func TickHandler(c *gin.Context) {
 	var reqBody RequestBody
@@ -44,6 +46,7 @@ func TickHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format", "error_msg": err.Error()})
 		return
 	}
+	LatestReturnURL = reqBody.ReturnURL
 
 	// Extract settings
 	var lokiURL, query string
