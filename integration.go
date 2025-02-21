@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/telexintegrations/grafana-loki-monitor/api"
 )
 
 func getIntegrationJSON(c *gin.Context) {
@@ -21,30 +20,25 @@ func getIntegrationJSON(c *gin.Context) {
 				"app_url":          "https://telex-integration.onrender.com",
 				"background_color": "#fff",
 			},
-			"is_active":            true,
+
 			"integration_category": "Monitoring & Logging",
 			"integration_type":     "interval",
+			"is_active":            true,
 			"key_features": []string{
 				"Fetch logs from Loki at regular intervals",
 				"Filter logs based on custom Loki queries",
 				"Send logs to a designated Telex channel",
 				"Monitor specific applications or services",
 			},
-			"permissions": map[string]map[string]interface{}{
-				"monitoring_user": {
-					"always_online": true,
-					"display_name":  "Performance Monitor",
-				},
-			},
 
 			"author": "Tireni",
 			"settings": []map[string]interface{}{
-				{"label": "Loki Server URL", "type": "text", "required": true, "default": "http://localhost:3100"},
-				{"label": "Loki Query", "type": "text", "required": true, "default": "{job='varlogs'}"},
-				{"label": "Interval", "type": "text", "required": true, "default": "*/5 * * * *", "description": "Cron expression defining how often logs are fetched"},
+				{"label": "Interval", "type": "text", "required": true, "default": "* * * * *"},
+				{"label": "Loki Server URL", "type": "text", "required": true, "default": "http://100.27.210.53:3100"},
+				{"label": "Loki Query", "type": "text", "required": true, "default": "{job=\"varlogs\"}"},
 			},
+			"target_url": "",
 			"tick_url":   "https://telex-integration.onrender.com/tick/",
-			"target_url": api.LatestReturnURL,
 		},
 	}
 
