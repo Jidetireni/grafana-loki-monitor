@@ -46,7 +46,7 @@ func TestTickHandler(t *testing.T) {
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
 
-	assert.Equal(t, "019527af-f248-7e03-b2fc-bed0265814a7", response["channel_id"])
+	assert.Equal(t, "Loki integration", response["event_name"])
 	// Wait briefly to allow async goroutine to execute
 	time.Sleep(500 * time.Millisecond)
 }
