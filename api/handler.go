@@ -1,13 +1,14 @@
 package api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
-	"github.com/telexintegrations/grafana-loki-monitor/service"
-
 	"github.com/gin-gonic/gin"
+	"github.com/telexintegrations/grafana-loki-monitor/service"
 )
 
 // LogRequest represents the data needed to fetch logs
@@ -46,6 +47,7 @@ func TickHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request format", "error_msg": err.Error()})
 		return
 	}
+
 	LatestReturnURL = reqBody.ReturnURL
 
 	// Extract settings
@@ -65,33 +67,55 @@ func TickHandler(c *gin.Context) {
 
 	// Validate required settings
 	if lokiURL == "" || query == "" {
-		log.Println("Missing required settings (Loki URL, Query)")
+		log.Println("❌ Missing required settings (Loki URL, Query)")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing Loki URL or Query"})
 		return
 	}
 
-	// Get time range (last 5 minutes)
-	endTime := time.Now().UTC()
-	startTime := endTime.Add(-5 * time.Minute)
+	// Respond immediately (processing in the background)
+	c.JSON(http.StatusAccepted, gin.H{"message": "Processing in background", "channel_id": reqBody.ChannelID})
 
-	// Send log request to the LogsEndpointHandler via the channel
-	logs, err := service.FetchLogs(lokiURL, query, startTime, endTime, 10)
+	// Using WaitGroup to manage goroutine
+	var wg sync.WaitGroup
+	var logs []string
+	var mu sync.Mutex // Mutex for safe concurrent access to logs slice
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		endTime := time.Now().UTC()
+		startTime := endTime.Add(-5 * time.Minute)
+
+		// Fetch logs
+		fetchedLogs, err := service.FetchLogs(lokiURL, query, startTime, endTime, 10)
+		if err != nil {
+			log.Printf("❌ Error fetching logs: %v", err)
+			return
+		}
+
+		// Protect shared slice with a mutex
+		mu.Lock()
+		logs = append(logs, fetchedLogs...)
+		mu.Unlock()
+	}()
+
+	// Wait for goroutine to finish
+	wg.Wait()
+
+	// Send logs to Telex
+	telexResponse, err := service.SendLogsToTelex(reqBody.ReturnURL, logs, reqBody.ChannelID)
 	if err != nil {
-		log.Printf("Error fetching logs: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch logs", "error_msg": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	err = service.SendLogsToTelex(reqBody.ReturnURL, logs, reqBody.ChannelID)
-	if err != nil {
-		log.Printf("Error sending logs to telex: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error sending logs to telex:", "error_msg": err.Error()})
-		return
-	}
-
+	// Print successful response for debugging
+	fmt.Println("✅ Logs sent to Telex:", telexResponse)
 	c.JSON(http.StatusOK, gin.H{
-		"channel_id": reqBody.ChannelID,
-		"return_url": reqBody.ReturnURL,
-		"logs":       logs,
+		"channel_id":    reqBody.ChannelID,
+		"return_url":    reqBody.ReturnURL,
+		"logs":          logs,
+		"telex_reponse": telexResponse,
 	})
-
 }
