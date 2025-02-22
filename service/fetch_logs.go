@@ -6,10 +6,8 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 )
 
@@ -72,15 +70,8 @@ func FetchLogs(lokiURL, query string, start, end time.Time, limit int) ([]string
 	return logs, nil
 }
 
-func SendLogsToTelex(returnURL string, logs []string, channelID string) (string, error) {
+func SendLogsToTelex(returnURL string, data map[string]interface{}) (string, error) {
 	// Convert payload to JSON
-	logMessage := strings.Join(logs, "\n")
-	data := map[string]interface{}{
-		"event_name": "Loki integration",
-		"message":    logMessage,
-		"status":     "success",
-		"username":   "tireni",
-	}
 
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -104,7 +95,6 @@ func SendLogsToTelex(returnURL string, logs []string, channelID string) (string,
 		return "", fmt.Errorf("error reading response: %v", err)
 	}
 
-	log.Printf("Logs successfully sent to Telex (%s): %v\n", returnURL, logs)
 	return string(body), err
 
 }

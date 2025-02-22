@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"net/http"
@@ -20,14 +20,6 @@ type Description struct {
 	AppName         string `json:"app_name"`
 	AppURL          string `json:"app_url"`
 	BackgroundColor string `json:"background_color"`
-}
-
-// Permissions struct for monitoring user
-type Permissions struct {
-	MonitoringUser struct {
-		AlwaysOnline bool   `json:"always_online"`
-		DisplayName  string `json:"display_name"`
-	} `json:"monitoring_user"`
 }
 
 // Setting struct for integration settings
@@ -58,7 +50,7 @@ type Response struct {
 }
 
 // getIntegrationJSON handles the request and sends the structured JSON response
-func getIntegrationJSON(c *gin.Context) {
+func GetIntegrationJSON(c *gin.Context) {
 	response := Response{
 		Data: Data{
 			Date: Date{
@@ -85,8 +77,8 @@ func getIntegrationJSON(c *gin.Context) {
 
 			Author: "Tireni",
 			Settings: []Setting{
-				{"loki Server URL", "text", true, "http://100.27.210.53:3100"},
-				{"loki Query", "text", true, "{job=\"varlogs\"}"},
+				{"Loki Server URL", "text", true, "http://100.27.210.53:3100"},
+				{"Loki Query", "text", true, "{job=\"varlogs\"}"},
 				{"interval", "text", true, "2 * * * *"},
 			},
 			TickURL:   "https://telex-integration.onrender.com/tick",

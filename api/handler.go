@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -72,9 +73,6 @@ func TickHandler(c *gin.Context) {
 		return
 	}
 
-	// Respond immediately (processing in the background)
-	c.JSON(http.StatusAccepted, gin.H{"message": "Processing in background", "channel_id": reqBody.ChannelID})
-
 	// Using WaitGroup to manage goroutine
 	var wg sync.WaitGroup
 	var logs []string
@@ -103,8 +101,16 @@ func TickHandler(c *gin.Context) {
 	// Wait for goroutine to finish
 	wg.Wait()
 
+	logMessage := strings.Join(logs, "\n")
+	data := map[string]interface{}{
+		"event_name": "Loki integration",
+		"message":    logMessage,
+		"status":     "success",
+		"username":   "tireni",
+	}
+
 	// Send logs to Telex
-	telexResponse, err := service.SendLogsToTelex(reqBody.ReturnURL, logs, reqBody.ChannelID)
+	telexResponse, err := service.SendLogsToTelex(reqBody.ReturnURL, data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -112,10 +118,5 @@ func TickHandler(c *gin.Context) {
 
 	// Print successful response for debugging
 	fmt.Println("✅ Logs sent to Telex:", telexResponse)
-	c.JSON(http.StatusOK, gin.H{
-		"channel_id":    reqBody.ChannelID,
-		"return_url":    reqBody.ReturnURL,
-		"logs":          logs,
-		"telex_reponse": telexResponse,
-	})
+	c.JSON(http.StatusOK, data)
 }
