@@ -4,6 +4,11 @@ This project provides an integration between **Grafana Loki** and **Telex**, ena
 
 ---
 
+  **Grafana-Loki Integration**
+  ![Alt text](./telexlogs2.png)
+
+---
+
 ## **Features**  
 - 📡 **Fetch logs from Loki** at regular intervals  
 - 🔍 **Filter logs using Loki queries**  
