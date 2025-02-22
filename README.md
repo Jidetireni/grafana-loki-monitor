@@ -66,9 +66,7 @@ This project provides an integration between **Grafana Loki** and **Telex**, ena
 
 **Response Example:**  
 ```json
-{
 {"status":"success","status_code":202,"message":"request received","task_id":"5e72517e-2418-46f2-bb5b-837422cb7e87"}
-}
 ```
 
 ---
