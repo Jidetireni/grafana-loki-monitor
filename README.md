@@ -67,12 +67,7 @@ This project provides an integration between **Grafana Loki** and **Telex**, ena
 **Response Example:**  
 ```json
 {
-  "channel_id": "12345",
-  "return_url": "https://telex-webhook.com/logs",
-  "logs": [
-    "[1708300000000000] Error: Failed to connect to database",
-    "[1708300000000100] Info: Service started successfully"
-  ]
+{"status":"success","status_code":202,"message":"request received","task_id":"5e72517e-2418-46f2-bb5b-837422cb7e87"}
 }
 ```
 
