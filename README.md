@@ -32,6 +32,9 @@ This project provides an integration between **Grafana Loki** and **Telex**, ena
    - `SendLogsToTelex()` sends logs to `return_url`.  
    - Telex receives and processes the logs.  
 
+   **Logs in a channel from the integration**
+   ![Alt text](./telexlogs.png)
+
 ---
 
 ## **Endpoints**  
