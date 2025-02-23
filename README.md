@@ -1,6 +1,6 @@
 # **Grafana Loki - Telex Integration**  
+![Integration Diagram](./telexlogs2.png)  
 
-![Integration Diagram](./telexlogs.png)  
 
 This project integrates **Grafana Loki** with **Telex**, enabling periodic log retrieval from a Loki server and forwarding logs to a Telex channel.
 
@@ -30,7 +30,7 @@ This project integrates **Grafana Loki** with **Telex**, enabling periodic log r
    - Telex receives and processes the logs  
 
 ### **Diagram of Grafana Loki - Telex Integration**  
-![Integration Diagram](./telexlogs2.png)  
+![Integration Diagram](./telexlogs.png)  
 
 ---
 
