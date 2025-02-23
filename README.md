@@ -49,7 +49,7 @@ Ensure you have Go installed on your system.
 
 Clone this repository:
 
-git clone 
+git clone https://github.com/telexintegrations/grafana-loki-monitor.git
 cd <repository-name> 
 Running the Test 
 
