@@ -1,69 +1,80 @@
-### **Grafana Loki - Telex Integration**  
+# **Grafana Loki - Telex Integration**  
 
-This project provides an integration between **Grafana Loki** and **Telex**, enabling periodic log retrieval from a Loki server and forwarding the logs to a Telex channel.
+![Integration Diagram](./telexlogs.png)  
 
----
+This project integrates **Grafana Loki** with **Telex**, enabling periodic log retrieval from a Loki server and forwarding logs to a Telex channel.
 
-  **Grafana-Loki Integration**
-  ![Alt text](./telexlogs2.png)
-
----
-
-## **Features**  
+## **Overview**  
 - 📡 **Fetch logs from Loki** at regular intervals  
 - 🔍 **Filter logs using Loki queries**  
 - 📤 **Send logs to a designated Telex channel**  
 - 📊 **Monitor applications or services dynamically**  
 
----
-
-## **How It Works**  
-
+### **Integration Workflow**  
 1. **Telex Configures the Integration**  
-   - Calls `GET /integration.json/` to fetch metadata.  
-   - Configures Loki Server URL, query, and fetch interval.  
+   - Calls `GET /integration.json/` to fetch metadata  
+   - Configures Loki Server URL, query, and fetch interval  
 
 2. **Telex Triggers Log Retrieval (`POST /tick/`)**  
-   - Sends a JSON request with:  
+   - Sends a JSON request containing:  
      - `channel_id` (Telex channel ID)  
-     - `return_url` (URL to send logs)  
+     - `return_url` (Webhook URL for logs)  
      - `settings` (Loki URL, query, etc.)  
 
 3. **The Service Fetches Logs**  
-   - Extracts Loki **server URL** and **query** from the request.  
-   - Fetches logs from **Loki** for the past **5 minutes**.  
+   - Extracts **Loki Server URL** and **query** from the request  
+   - Fetches logs from **Loki** for the past **5 minutes**  
 
 4. **Logs Are Sent to Telex**  
-   - `SendLogsToTelex()` sends logs to `return_url`.  
-   - Telex receives and processes the logs.  
+   - The `SendLogsToTelex()` function forwards logs to `return_url`  
+   - Telex receives and processes the logs  
 
-   **Logs in a channel from the integration**
-   ![Alt text](./telexlogs.png)
+### **Diagram of Grafana Loki - Telex Integration**  
+![Integration Diagram](./telexlogs2.png)  
 
 ---
 
+## **Testing the Loki Integration**  
 
-Testing the Loki Integration Prerequisites 
+Use the following `curl` command to test the integration:  
 
-Ensure you have Go installed on your system.
+```sh
+curl -X POST "https://telex-integration.onrender.com/tick" \
+     -H "Content-Type: application/json" \
+     -d '{
+        "channel_id": "01952e92-8ab0-7c08-9df4-dbaa1f4d6c9d",
+        "return_url": "https://ping.telex.im/v1/webhooks/01952e92-8ab0-7c08-9df4-dbaa1f4d6c9d",
+        "settings": [
+            {
+                "default": "http://100.27.210.53:3100",
+                "label": "Loki Server URL",
+                "required": true,
+                "type": "text"
+            },
+            {
+                "default": "{job=\"varlogs\"}",
+                "label": "Loki Query",
+                "required": true,
+                "type": "text"
+            },
+            {
+                "default": "* * * * *",
+                "label": "Interval",
+                "required": true,
+                "type": "text"
+            }
+        ]
+     }'
+```
 
-Clone this repository:
+Check the received logs at:  
+🔗 [Telex Dashboard](https://telex.im/dashboard/channels/01952e92-8ab0-7c08-9df4-dbaa1f4d6c9d)  
 
-git clone https://github.com/telexintegrations/grafana-loki-monitor.git
-cd <repository-name> 
-Running the Test 
+---
 
-Navigate to the root directory of the project.
+## **API Endpoints**  
 
-Run the following command:
-
-go test ./api -run TestTickHandler -v 
-
-Configuration Update the test payload with your desired Channel ID and Return URL. Set the required Loki Server URL and Loki Query in the request payload. Verifying the Integration After running the test, check the specified Channel ID to verify that log notifications are received. 
-
-## **Endpoints**  
-
-### **1. Get Integration Details**  
+### **1. Get Integration Metadata**  
 📌 **GET `/integration.json/`**  
 - Returns metadata about the integration, including name, description, and configuration options.  
 
@@ -71,7 +82,7 @@ Configuration Update the test payload with your desired Channel ID and Return UR
 📌 **POST `/tick/`**  
 - Accepts a JSON payload with Loki settings and triggers log retrieval.  
 
-**Request Example:**  
+#### **Request Example:**  
 ```json
 {
   "channel_id": "12345",
@@ -83,9 +94,14 @@ Configuration Update the test payload with your desired Channel ID and Return UR
 }
 ```
 
-**Response Example:**  
+#### **Response Example:**  
 ```json
-{"status":"success","status_code":202,"message":"request received","task_id":"5e72517e-2418-46f2-bb5b-837422cb7e87"}
+{
+  "status": "success",
+  "status_code": 202,
+  "message": "request received",
+  "task_id": "5e72517e-2418-46f2-bb5b-837422cb7e87"
+}
 ```
 
 ---
@@ -93,9 +109,11 @@ Configuration Update the test payload with your desired Channel ID and Return UR
 ## **Installation & Running Locally**  
 
 ### **Prerequisites**  
+Ensure you have:  
 - **Go 1.18+** installed  
-- **Gin Framework** (`github.com/gin-gonic/gin`)  
-- **CORS Middleware** (`github.com/gin-contrib/cors`)  
+- Required Go packages:  
+  - **Gin Framework** (`github.com/gin-gonic/gin`)  
+  - **CORS Middleware** (`github.com/gin-contrib/cors`)  
 
 ### **1. Clone the Repository**  
 ```sh
@@ -117,10 +135,12 @@ go run main.go
 ---
 
 ## **Configuration**  
-The integration can be customized using the **settings** field in `POST /tick/`.  
-- **Loki Server URL** – The address of the Loki server.  
-- **Loki Query** – LogQL query to filter logs.  
-- **Interval** – Frequency of fetching logs (supports cron syntax).  
+The integration can be customized using the **settings** field in `POST /tick/`:  
+| Setting            | Description                          | Example Value                    |
+|--------------------|--------------------------------------|----------------------------------|
+| **Loki Server URL** | Address of the Loki server         | `http://localhost:3100`         |
+| **Loki Query**     | LogQL query to filter logs         | `{job="varlogs"}`               |
+| **Interval**       | Frequency of fetching logs (cron)  | `* * * * *` (every minute)      |
 
 ---
 

@@ -22,12 +22,12 @@ func TestTickHandler(t *testing.T) {
 	// Prepare request
 
 	payload := RequestBody{
-		ChannelID: "019527af-f248-7e03-b2fc-bed0265814a7",
-		ReturnURL: "https://ping.telex.im/v1/webhooks/019527af-f248-7e03-b2fc-bed0265814a7",
+		ChannelID: "01952e92-8ab0-7c08-9df4-dbaa1f4d6c9d",
+		ReturnURL: "https://ping.telex.im/v1/webhooks/01952e92-8ab0-7c08-9df4-dbaa1f4d6c9d",
 		Settings: []Setting{
 			{"Loki Server URL", "text", true, "http://100.27.210.53:3100"},
 			{"Loki Query", "text", true, "{job=\"varlogs\"}"},
-			{"interval", "text", true, "2 * * * *"},
+			{"interval", "text", true, "*/2 * * * *"},
 		},
 	}
 
