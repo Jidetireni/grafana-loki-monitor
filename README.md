@@ -42,6 +42,24 @@ This project provides an integration between **Grafana Loki** and **Telex**, ena
 
 ---
 
+
+Testing the Loki Integration Prerequisites 
+
+Ensure you have Go installed on your system.
+
+Clone this repository:
+
+git clone 
+cd <repository-name> 
+Running the Test 
+
+Navigate to the root directory of the project.
+
+Run the following command:
+
+go test ./api -run TestTickHandler -v 
+Configuration Update the test payload with your desired Channel ID and Return URL. Set the required Loki Server URL and Loki Query in the request payload. Verifying the Integration After running the test, check the specified Channel ID to verify that log notifications are received. 
+
 ## **Endpoints**  
 
 ### **1. Get Integration Details**  
