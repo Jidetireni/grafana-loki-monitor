@@ -69,7 +69,7 @@ func TickHandler(c *gin.Context) {
 
 	// Validate required settings
 	if lokiURL == "" || query == "" {
-		log.Println("❌ Missing required settings (Loki URL, Query)")
+		log.Println(" Missing required settings (Loki URL, Query)")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing Loki URL or Query"})
 		return
 	}
